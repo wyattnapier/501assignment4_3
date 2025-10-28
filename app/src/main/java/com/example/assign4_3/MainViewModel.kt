@@ -15,14 +15,18 @@ import java.util.Date
 import java.util.Locale
 import kotlin.math.roundToInt
 
-public class MainViewModel {
+public class MainViewModel: ViewModel() {
     private val _tempEntries = MutableStateFlow<List<TempPoint>>(emptyList())
     val tempEntries = _tempEntries.asStateFlow()
 
-    // TODO: turn into stateflow values instead
-    var minTemp: Float? = null
-    var maxTemp: Float? = null
-    var avgTemp: Float? = null
+    private val _minTemp = MutableStateFlow<Float?>(null)
+    val minTemp = _minTemp.asStateFlow()
+
+    private val _maxTemp = MutableStateFlow<Float?>(null)
+    val maxTemp = _maxTemp.asStateFlow()
+
+    private val _avgTemp = MutableStateFlow<Float?>(null)
+    val avgTemp = _avgTemp.asStateFlow()
 
     private var autoGenerateJob: Job? = null
 
@@ -73,14 +77,19 @@ public class MainViewModel {
 
     private fun calculateMetrics() {
         val currentEntries = _tempEntries.value
+
+        // early return if empty
+        if (currentEntries.isEmpty()) {
+            _minTemp.value = null
+            _maxTemp.value = null
+            _avgTemp.value = null
+            return
+        }
+
         val currentTemps = currentEntries.map{entry -> entry.temp} // just get temp values
-        // TODO: decide if necessary
-//        if (currentTemps.size < 20) {
-//            Log.d("CalculateMetrics", "List of data is not long enough to calculate accurate metrics")
-//            return
-//        }
-        minTemp = currentTemps.min()
-        maxTemp = currentTemps.max()
-        avgTemp = currentTemps.average().toFloat()
+
+        _minTemp.value = currentTemps.min()
+        _maxTemp.value = currentTemps.max()
+        _avgTemp.value = currentTemps.average().toFloat()
     }
 }
