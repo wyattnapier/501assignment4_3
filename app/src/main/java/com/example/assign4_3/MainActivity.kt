@@ -1,6 +1,10 @@
 package com.example.assign4_3
 
 import android.os.Bundle
+import androidx.compose.foundation.layout.Box
+import androidx.compose.ui.graphics.nativeCanvas
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.unit.sp
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -132,13 +136,66 @@ fun TempChart(vm: MainViewModel) {
         val yMin = 60f
         val yMax = 90f
 
+        val yAxisPadding = 25.dp.toPx()
+        val xAxisPadding = 10.dp.toPx()
+        val yAxisLineStart = Offset(x = yAxisPadding, y = 0f)
+        val yAxisLineEnd = Offset(x = yAxisPadding, y = size.height - xAxisPadding)
+
+        drawLine(
+            color = Color.Black,
+            start = yAxisLineStart,
+            end = yAxisLineEnd,
+            strokeWidth = 2f
+        )
+
+        val textPaint = android.graphics.Paint().apply {
+            isAntiAlias = true
+            textSize = 12.sp.toPx()
+            color = Color.Black.toArgb()
+            textAlign = android.graphics.Paint.Align.RIGHT // Align text to the right of the point
+        }
+
+        // y axis labels
+        val yLabelCount = 4
+        for (i in 0 until yLabelCount) {
+            val value = yMin + (i * (yMax - yMin) / (yLabelCount - 1))
+            val normalizedY = 1 - ((value - yMin) / (yMax - yMin))
+            val y = normalizedY * (size.height - xAxisPadding)
+
+            // Draw the label text
+            drawContext.canvas.nativeCanvas.drawText(
+                "%.0f°".format(value),
+                yAxisPadding - 8.dp.toPx(), // Position text to the left of the axis line
+                y,
+                textPaint
+            )
+
+            // Draw a small tick mark on the axis
+            drawLine(
+                color = Color.Black,
+                start = Offset(yAxisPadding - 4.dp.toPx(), y),
+                end = Offset(yAxisPadding, y),
+                strokeWidth = 2f
+            )
+        }
+
+        // x axis labels
+        val xAxisLineStart = Offset(x = yAxisPadding, y = size.height - xAxisPadding)
+        val xAxisLineEnd = Offset(x = size.width, y = size.height - xAxisPadding)
+        drawLine(
+            color = Color.Black,
+            start = xAxisLineStart,
+            end = xAxisLineEnd,
+            strokeWidth = 2f
+        )
+
         val points = tempList.mapIndexed { index, entry ->
             val x =
-                chartPadding + index * (size.width - 2 * chartPadding) / (tempList.size - 1).coerceAtLeast(
+                yAxisPadding + index * (size.width - yAxisPadding) / (tempList.size - 1).coerceAtLeast(
                     1
                 )
             val normalizedY = 1 - ((entry.temp - yMin) / (yMax - yMin)).coerceIn(0f, 1f)
-            val y = chartPadding + normalizedY * (size.height - 2 * chartPadding)
+            val y = normalizedY * (size.height - xAxisPadding)
 
             Offset(x, y)
         }
@@ -175,7 +232,8 @@ fun TempChartWrapper(vm: MainViewModel) {
     Column(modifier = Modifier.fillMaxWidth(fraction = 0.8f)) {
         Text(
             "Temperature Chart",
-            style = MaterialTheme.typography.headlineMedium
+            style = MaterialTheme.typography.headlineMedium,
+            modifier = Modifier.padding(bottom = 20.dp)
         )
         TempChart(vm)
     }
