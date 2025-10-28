@@ -19,6 +19,9 @@ public class MainViewModel: ViewModel() {
     private val _tempEntries = MutableStateFlow<List<TempPoint>>(emptyList())
     val tempEntries = _tempEntries.asStateFlow()
 
+    private val _autoGenerate = MutableStateFlow(true)
+    val autoGenerate: StateFlow<Boolean> = _autoGenerate
+
     private val _minTemp = MutableStateFlow<Float?>(null)
     val minTemp = _minTemp.asStateFlow()
 
@@ -30,7 +33,14 @@ public class MainViewModel: ViewModel() {
 
     private var autoGenerateJob: Job? = null
 
+    init {
+        if (_autoGenerate.value) {
+            startAutoGenerate()
+        }
+    }
+
     fun setAutoGenerate(flag: Boolean) {
+        _autoGenerate.value = flag
         if (flag) {
             startAutoGenerate()
         } else {
@@ -45,6 +55,7 @@ public class MainViewModel: ViewModel() {
                 delay(2 * 1000L)
                 generateDataPoint()
                 calculateMetrics()
+                Log.d("GeneratingData", "added more")
             }
         }
     }
