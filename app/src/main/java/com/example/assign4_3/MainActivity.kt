@@ -9,6 +9,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -59,26 +60,65 @@ fun MainScreen(vm: MainViewModel) {
         verticalArrangement = Arrangement.Center
     ) {
         ManageDataGeneration(vm)
+        Spacer(modifier = Modifier.padding(6.dp))
+        ShowStats(vm)
+        Spacer(modifier = Modifier.padding(6.dp))
         TempReadingList(tempList)
+    }
+}
+
+@Composable
+fun ShowStats(vm: MainViewModel) {
+    Column {
+        Text("Temperature Stats",
+            style = MaterialTheme.typography.headlineMedium
+        )
+        Row(
+            modifier = Modifier.fillMaxWidth(fraction = 0.8f),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Column {
+                Text("Minimum")
+                Text(vm.minTemp.collectAsState().value.toString())
+            }
+            Column {
+                Text("Maximum")
+                Text(vm.maxTemp.collectAsState().value.toString())
+            }
+            Column {
+                Text("Average")
+                Text(vm.avgTemp.collectAsState().value.toString())
+            }
+        }
     }
 }
 
 @Composable
 fun ManageDataGeneration(vm: MainViewModel) {
     val pauseDataGeneration by vm.autoGenerate.collectAsState()
-    Row(
-        modifier = Modifier.fillMaxWidth(fraction=0.8f),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Text("Auto generate temperature data")
-        Switch(checked = pauseDataGeneration, onCheckedChange = {vm.setAutoGenerate(it)})
+    Column {
+        Text(
+            "Manage Data Generation",
+            style = MaterialTheme.typography.headlineMedium
+        )
+        Row(
+            modifier = Modifier.fillMaxWidth(fraction = 0.8f),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text("Auto generate temperature data")
+            Switch(checked = pauseDataGeneration, onCheckedChange = { vm.setAutoGenerate(it) })
+        }
     }
 }
 
 @Composable
 fun TempReadingList(tempList: List<TempPoint>) {
     Column { // only 20 entries so don't need lazycolumn
+        Text("Temperature Readings",
+            style = MaterialTheme.typography.headlineMedium
+        )
         tempList.forEach { entry: TempPoint ->
             Row(
                 modifier = Modifier.fillMaxWidth(0.8f),
